@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación: Transferencia de Calor</title>
+    
+    <!-- Importar la fuente Inter de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Cargar Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración de Tailwind para usar la fuente Inter
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    
+    <style>
+        /* Estilo para los botones de opción múltiple */
+        .mcq-option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            border: 1px solid #D1D5DB; /* gray-300 */
+            border-radius: 8px; /* rounded-lg */
+            transition: all 0.2s ease;
+        }
+        .mcq-option-btn:hover {
+            border-color: #3B82F6; /* blue-500 */
+            background-color: #EFF6FF; /* blue-50 */
+            color: #1D4ED8; /* blue-700 */
+        }
+
+        /* Ocultar elementos por defecto */
+        #quiz-container, #summary-container {
+            display: none;
+        }
+
+        /* Estilos para la lista de resumen */
+        .summary-item.correct .user-answer {
+            color: #166534; /* green-800 */
+            background-color: #D1FAE5; /* green-100 */
+            border-color: #6EE7B7; /* green-300 */
+        }
+        .summary-item.incorrect .user-answer {
+            color: #991B1B; /* red-800 */
+            background-color: #FEE2E2; /* red-100 */
+            border-color: #FCA5A5; /* red-300 */
+        }
+        .summary-item.incorrect .correct-answer {
+            display: block; /* Mostrar la respuesta correcta si está mal */
+        }
+        
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-4 md:p-8">
+
+    <!-- Cabecera -->
+    <header class="text-center mb-8 md:mb-12 pb-6 border-b-2 border-blue-700">
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-800">EVALUACIÓN DE CONOCIMIENTO</h1>
+        <p class="text-lg md:text-xl text-gray-700 mt-2">Transferencia de Calor 2025 - Prof. Ph.D. Juan Sandoval Herrera</p>
+    </header>
+
+    <!-- 1. PANTALLA DE INICIO -->
+    <div id="start-screen" class="max-w-3xl mx-auto text-center">
+        <p class="text-lg text-gray-800 mb-8">
+            ¡Bienvenido, estudiante! A continuación, pon a prueba tu conocimiento.
+            Esta evaluación consta de 20 preguntas (Parte lúdica y Parte teórica).
+            El orden de las preguntas y respuestas es aleatorio. Tus resultados se mostrarán al final.
+        </p>
+        <button id="start-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+            Iniciar Evaluación (20 Preguntas)
+        </button>
+    </div>
+
+    <!-- 2. CONTENEDOR DEL QUIZ (Oculto) -->
+    <div id="quiz-container" class="max-w-xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-2xl">
+        <p id="question-counter" class="text-right font-semibold text-gray-500 mb-4">Pregunta 1 / 20</p>
+        
+        <!-- Contenedor para la imagen (en preguntas de imagen) -->
+        <img id="quiz-image" src="" alt="Equipo" class="w-full max-h-80 object-contain rounded-lg mb-5 border border-gray-200" style="display: none;">
+        
+        <!-- Contenedor para el texto de la pregunta -->
+        <h3 id="quiz-question-text" class="text-xl md:text-2xl font-bold text-blue-800 mb-5 text-center"></h3>
+        
+        <!-- Contenedor para las opciones -->
+        <div id="quiz-options-container" class="mb-5">
+            <!-- Los botones de opciones se generarán aquí con JS -->
+        </div>
+    </div>
+
+    <!-- 3. PANTALLA DE RESUMEN (Oculto) -->
+    <div id="summary-container" class="max-w-3xl mx-auto">
+        <div class="text-center bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-3xl font-bold text-blue-800 mb-2">Evaluación Completada</h2>
+            <p id="final-score" class="text-5xl font-bold text-gray-800">Puntaje: 0 / 20</p>
+            
+            <!-- NUEVO: Mensaje de Feedback Personalizado -->
+            <p id="final-feedback-message" class="text-lg md:text-xl font-semibold mt-4 p-4 rounded-lg"></p>
+        </div>
+        
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Revisión de Respuestas:</h3>
+        <div id="summary-list" class="space-y-4">
+            <!-- El resumen de respuestas se generará aquí con JS -->
+        </div>
+    </div>
+
+
+    <!-- 4. FUENTE DE DATOS (Galería Oculta - PARTE 1) -->
+    <div id="gallery-container" class="hidden">
+        <div class="gallery-item" data-answer="Intercambiador de doble tubo.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Dobletubo.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Rotovapor.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Rotovapor.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Torre de enfriamiento.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Torreenfriamiento.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Condensador.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/condensador.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Caldera.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Caldera.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Chiller.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Chiller.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Evaporador de circulación forzada.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Evapcirculforz.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Evaporador de múltiple efecto.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Evapmultipleefecto.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Intercambiador de coraza y tubos.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/STHE.jpg?raw=true">
+        </div>
+        <div class="gallery-item" data-answer="Intercambiador de placas.">
+            <img src="https://github.com/Juansanher25/actividadludica/blob/main/Plateheatexchanger.jpg?raw=true">
+        </div>
+    </div>
+
+
+    <script>
+        // --- Lógica JavaScript para la interactividad ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Variables de Pantallas ---
+            const startScreen = document.getElementById('start-screen');
+            const quizContainer = document.getElementById('quiz-container');
+            const summaryContainer = document.getElementById('summary-container');
+            const startBtn = document.getElementById('start-btn');
+
+            // --- Variables del Quiz ---
+            const questionCounter = document.getElementById('question-counter');
+            const quizImage = document.getElementById('quiz-image');
+            const quizQuestionText = document.getElementById('quiz-question-text');
+            const mcqContainer = document.getElementById('quiz-options-container');
+
+            // --- Variables de Resumen ---
+            const finalScoreEl = document.getElementById('final-score');
+            const summaryList = document.getElementById('summary-list');
+
+            // --- Variables de Datos ---
+            const galleryItems = document.querySelectorAll('#gallery-container .gallery-item');
+            let questions = []; // Array para guardar TODAS las preguntas
+            let allImageAnswers = []; // Array de respuestas de imagen (para distractores)
+            let userAnswers = []; // Array para guardar las respuestas del usuario
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let totalQuestions = 0;
+
+            // --- FUENTE DE DATOS (PARTE 2 - TEÓRICA) ---
+            const conceptualQuestionsData = [
+                {
+                    text: "En uno de los siguientes equipos no se realiza transferencia de calor solamente",
+                    options: ["Intercambiador de placas", "Evaporador", "Chiller", "Torre de enfriamiento"],
+                    answer: "Torre de enfriamiento"
+                },
+                {
+                    text: "En uno de los siguientes equipos ocurre una reacción química que genera calor",
+                    options: ["Intercambiador de placas", "Caldera", "Chiller", "Torre de enfriamiento"],
+                    answer: "Caldera"
+                },
+                {
+                    text: "En uno de los siguientes equipos hay más de un equipo, es decir, se trata de una unidad",
+                    options: ["Intercambiador de placas", "Caldera", "Chiller", "Torre de enfriamiento"],
+                    answer: "Chiller"
+                },
+                {
+                    text: "Uno de los siguientes equipos ocupa muy poco espacio en planta",
+                    options: ["Intercambiador de placas", "Caldera", "Chiller", "Torre de enfriamiento"],
+                    answer: "Intercambiador de placas"
+                },
+                {
+                    text: "En uno de los siguientes equipos la finalidad de la transferencia de calor es para que ocurra un cambio de fase y se concentre una solución",
+                    options: ["Torre de enfriamiento", "Evaporador", "Intercambiador de doble tubo", "Intercambiador de placas"],
+                    answer: "Evaporador"
+                },
+                {
+                    text: "Uno de los siguientes equipos se prefiere a un intercambiador para enfriar grandes caudales de agua mediante aire",
+                    options: ["Torre de enfriamiento", "Intercambiador de placas", "Evaporador", "Intercambiador de doble tubo"],
+                    answer: "Torre de enfriamiento"
+                },
+                {
+                    text: "Uno de los siguientes equipos, para intercambio de calor solamente, ocupa mucho espacio y es poco eficiente, pero su costo es muy bajo",
+                    options: ["Intercambiador de placas", "Evaporador", "Intercambiador de doble tubo", "Torre de enfriamiento"],
+                    answer: "Intercambiador de doble tubo"
+                },
+                {
+                    text: "Uno de los siguientes equipos es el más usado para diferentes operaciones: calentamiento, enfriamiento, evaporación, condensación, en la industria petroquímica",
+                    options: ["Intercambiador de doble tubo", "Intercambiador de placas", "Intercambiador de coraza y tubos", "Torre de enfriamiento"],
+                    answer: "Intercambiador de coraza y tubos"
+                },
+                {
+                    text: "En uno de los siguientes equipos la finalidad de la transferencia de calor es para enfriar agua mediante un refrigerante",
+                    options: ["Caldera", "Chiller", "Evaporador", "Torre de enfriamiento"],
+                    answer: "Chiller"
+                },
+                {
+                    text: "Es un tipo de evaporador muy usado en laboratorio",
+                    options: ["De múltiple efecto", "De circulación forzada", "De tubos largos", "Rotovapor"],
+                    answer: "Rotovapor"
+                }
+            ];
+
+            // --- Función de reintento con Backoff Exponencial ---
+            async function fetchWithBackoff(apiUrl, payload, retries = 3, delay = 1000) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        if (response.status === 429 || response.status >= 500) {
+                            throw new Error(`HTTP error ${response.status}`);
+                        } else {
+                            const errorData = await response.json();
+                            console.error("Error de API (sin reintento):", errorData);
+                            return null;
+                        }
+                    }
+                    return await response.json();
+                } catch (error) {
+                    if (retries > 0) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return fetchWithBackoff(apiUrl, payload, retries - 1, delay * 2);
+                    } else {
+                        console.error("La llamada a la API falló después de varios reintentos:", error);
+                        return null;
+                    }
+                }
+            }
+
+            // --- Funciones del Quiz ---
+
+            // Función para barajar un array (algoritmo Fisher-Yates)
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // Función para inicializar y empezar el quiz
+            function startQuiz() {
+                // 1. Cargar datos de la galería oculta (Part 1 - Lúdica)
+                questions = [];
+                allImageAnswers = []; 
+                galleryItems.forEach(item => {
+                    const answer = item.dataset.answer;
+                    const img = item.querySelector('img').src;
+                    questions.push({ type: 'image', img, answer });
+                    allImageAnswers.push(answer); // Build distractor list
+                });
+
+                // 2. Cargar datos conceptuales (Part 2 - Teórica)
+                conceptualQuestionsData.forEach(q => {
+                    questions.push({
+                        type: 'text',
+                        text: q.text,
+                        options: q.options,
+                        answer: q.answer
+                    });
+                });
+
+                // 3. Aleatorizar el orden de TODAS las preguntas (mezcladas)
+                shuffleArray(questions);
+
+                // 4. Resetear estado
+                userAnswers = [];
+                currentQuestionIndex = 0;
+                score = 0;
+                totalQuestions = questions.length; // Total (ej: 20)
+
+                // 5. Cambiar de pantalla
+                startScreen.style.display = 'none';
+                summaryContainer.style.display = 'none';
+                quizContainer.style.display = 'block';
+
+                // 6. Mostrar la primera pregunta
+                showQuestion();
+            }
+
+            // Función para mostrar la pregunta actual
+            function showQuestion() {
+                if (currentQuestionIndex >= questions.length) {
+                    // Quiz terminado
+                    showSummary();
+                    return;
+                }
+
+                const question = questions[currentQuestionIndex];
+                
+                // Actualizar contador
+                questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} / ${totalQuestions}`;
+                mcqContainer.innerHTML = ''; // Limpiar opciones anteriores
+
+                let options = [];
+                
+                if (question.type === 'image') {
+                    // Es una pregunta de IMAGEN
+                    quizImage.src = question.img;
+                    quizImage.style.display = 'block';
+                    quizQuestionText.textContent = '¿A qué equipo corresponde la imagen?';
+                    options = generateImageMCQOptions(question.answer); // Genera distractores
+                
+                } else { 
+                    // Es una pregunta de TEXTO
+                    quizImage.style.display = 'none';
+                    quizQuestionText.textContent = question.text; // Muestra el texto de la pregunta
+                    options = shuffleArray([...question.options]); // Baraja las opciones dadas
+                }
+
+                // Crear botones de opción (lógica unificada)
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.className = 'mcq-option-btn';
+                    button.onclick = () => selectAnswer(option, question.answer);
+                    mcqContainer.appendChild(button);
+                });
+            }
+
+            // Función para generar opciones para preguntas de IMAGEN
+            function generateImageMCQOptions(correctAnswer) {
+                let options = [correctAnswer];
+                let distractors = allImageAnswers.filter(ans => ans !== correctAnswer);
+                shuffleArray(distractors);
+                options.push(...distractors.slice(0, 3)); // Añadir 3 distractores
+                return shuffleArray(options); // Barajar la respuesta correcta con los distractores
+            }
+
+            // Función al seleccionar una respuesta
+            function selectAnswer(selectedOption, correctAnswer) {
+                const question = questions[currentQuestionIndex];
+                
+                // Guardar la respuesta del usuario
+                userAnswers.push({
+                    type: question.type,
+                    questionImg: question.img || null,
+                    questionText: question.text || '¿A qué equipo corresponde la imagen?',
+                    questionAnswer: correctAnswer,
+                    selectedAnswer: selectedOption,
+                    isCorrect: selectedOption === correctAnswer
+                });
+
+                // Avanzar a la siguiente pregunta
+                currentQuestionIndex++;
+                showQuestion();
+            }
+
+            // --- Funciones de Resumen ---
+
+            function showSummary() {
+                // 1. Cambiar de pantalla
+                quizContainer.style.display = 'none';
+                summaryContainer.style.display = 'block';
+
+                // 2. Calcular puntaje
+                score = userAnswers.filter(ans => ans.isCorrect).length;
+                finalScoreEl.textContent = `Puntaje Final: ${score} / ${totalQuestions}`;
+
+                // --- NUEVO: Lógica de Feedback Personalizado ---
+                const feedbackEl = document.getElementById('final-feedback-message');
+                const percentage = (score / totalQuestions) * 100;
+                let feedbackMessage = "";
+                let feedbackClass = ""; // Clases de Tailwind para color
+
+                if (percentage >= 90) {
+                    feedbackMessage = "¡Felicitaciones, eres sobresaliente! Tienes un dominio excelente de los conceptos.";
+                    feedbackClass = "bg-green-100 text-green-800 border border-green-300";
+                } else if (percentage >= 70) {
+                    feedbackMessage = "¡Muy buen trabajo! Estás en un buen nivel. Repasa los conceptos en los que fallaste para perfeccionar tu conocimiento.";
+                    feedbackClass = "bg-blue-100 text-blue-800 border border-blue-300";
+                } else if (percentage >= 50) {
+                    feedbackMessage = "Estás en camino, pero necesitas repasar. Concéntrate en las preguntas incorrectas y usa el botón 'Explicar' para reforzar esos temas.";
+                    feedbackClass = "bg-yellow-100 text-yellow-800 border border-yellow-300";
+                } else {
+                    feedbackMessage = "Debes repasar a fondo estos conceptos. Te recomendamos revisar el material de clase y luego volver a intentar la evaluación.";
+                    feedbackClass = "bg-red-100 text-red-800 border border-red-300";
+                }
+
+                feedbackEl.textContent = feedbackMessage;
+                // Aplicar clases base + clases dinámicas de color
+                feedbackEl.className = "text-lg md:text-xl font-semibold mt-4 p-4 rounded-lg " + feedbackClass;
+                // --- Fin Lógica de Feedback ---
+
+
+                // 3. Construir la lista de revisión
+                summaryList.innerHTML = ''; // Limpiar resumen anterior
+                userAnswers.forEach((answer, index) => {
+                    const item = document.createElement('div');
+                    item.className = `summary-item bg-white p-4 rounded-lg shadow ${answer.isCorrect ? 'correct' : 'incorrect'}`;
+                    
+                    let questionContent = '';
+                    let questionTitle = '';
+
+                    if (answer.type === 'image') {
+                        // Resumen para pregunta de IMAGEN
+                        questionContent = `<img src="${answer.questionImg}" class="w-16 h-16 object-cover rounded-md mr-4 border">`;
+                        questionTitle = answer.questionAnswer; // Título es la respuesta (el equipo)
+                    } else {
+                        // Resumen para pregunta de TEXTO
+                        questionContent = `<div class="w-16 h-16 bg-gray-100 flex items-center justify-center rounded-md mr-4 border p-2 flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                          </div>`;
+                        questionTitle = answer.questionText; // Título es la pregunta
+                    }
+
+                    let html = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                ${questionContent}
+                                <div class="min-w-0">
+                                    <p class="font-bold text-base md:text-lg text-gray-800 truncate">${questionTitle}</p>
+                                    <p class="user-answer text-base font-semibold border-l-4 px-2 py-1 mt-1">
+                                        Tu respuesta: ${answer.selectedAnswer}
+                                    </p>
+                                    <p class="correct-answer text-base font-semibold text-green-700 mt-1" style="display: none;">
+                                        Respuesta correcta: ${answer.questionAnswer}
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="gemini-explain-btn bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-2 px-4 rounded-lg font-semibold text-sm shadow hover:from-purple-600 hover:to-indigo-700 transition-all ml-2 flex-shrink-0">
+                                ✨ Explicar
+                            </button>
+                        </div>
+                        <div class="gemini-response-container mt-3 text-left" style="display: none;">
+                            <!-- Spinner -->
+                            <div class="loading-spinner flex items-center justify-center py-2">
+                                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p class="ml-2 text-gray-600">Generando explicación...</p>
+                            </div>
+                            <!-- Contenido -->
+                            <p class="gemini-response-text text-gray-700 text-base bg-gray-50 p-3 rounded-lg border"></p>
+                        </div>
+                    `;
+                    
+                    item.innerHTML = html;
+                    
+                    // Asignar el listener al botón de Gemini, pasando el objeto 'answer'
+                    item.querySelector('.gemini-explain-btn').addEventListener('click', (e) => {
+                        handleGeminiExplain(e.target, answer);
+                    });
+
+                    summaryList.appendChild(item);
+                });
+            }
+
+            // --- Lógica de "Explicar" (CON GEMINI REAL - ADAPTATIVA) ---
+            async function handleGeminiExplain(button, answer) {
+                const responseContainer = button.closest('.summary-item').querySelector('.gemini-response-container');
+                const loadingSpinner = responseContainer.querySelector('.loading-spinner');
+                const responseText = responseContainer.querySelector('.gemini-response-text');
+
+                // Mostrar spinner
+                responseContainer.style.display = 'block';
+                loadingSpinner.style.display = 'flex';
+                responseText.style.display = 'none';
+                responseText.innerHTML = "";
+                button.disabled = true;
+
+                const apiKey = ""; // Dejar vacío
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                // --- Lógica de Prompt Adaptativo ---
+                const systemPrompt = "Eres un profesor experto en ingeniería química y transferencia de calor. Explica el siguiente concepto de forma clara, concisa y educativa (en 2-3 párrafos) para un estudiante universitario. Responde en español.";
+                let userQuery = "";
+
+                if (answer.type === 'image') {
+                    // Prompt para explicar un EQUIPO
+                    userQuery = `Explica qué es y cómo funciona un/una ${answer.questionAnswer}. Incluye sus aplicaciones principales en la industria.`;
+                } else {
+                    // Prompt para explicar un CONCEPTO
+                    userQuery = `Para la siguiente pregunta de examen:\n\nPREGUNTA: "${answer.questionText}"\nRESPUESTA CORRECTA: "${answer.questionAnswer}"\n\nExplica por qué esa es la respuesta correcta. Si la pregunta involucra comparar opciones, explica brevemente por qué las otras opciones son incorrectas.`;
+                }
+                // --- Fin Lógica de Prompt ---
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                try {
+                    const result = await fetchWithBackoff(apiUrl, payload);
+                    
+                    loadingSpinner.style.display = 'none';
+                    responseText.style.display = 'block';
+
+                    if (result && result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        let explanation = result.candidates[0].content.parts[0].text;
+                        
+                        // Convertir Markdown a HTML
+                        explanation = explanation.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        explanation = explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        explanation = explanation.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                        explanation = explanation.replace(/(\n\s*){2,}/g, '<br><br>');
+                        explanation = explanation.replace(/\n- /g, '<br>- ');
+                        explanation = explanation.replace(/\n/g, '<br>');
+
+                        responseText.innerHTML = explanation;
+                    } else {
+                        responseText.innerHTML = "No se pudo generar la explicación. Inténtalo de nuevo.";
+                        console.error("Respuesta de API inválida:", result);
+                    }
+                } catch (error) {
+                    loadingSpinner.style.display = 'none';
+                    responseText.style.display = 'block';
+                    responseText.innerHTML = "Error al contactar el servicio de IA.";
+                    console.error("Error en el evento click de Gemini:", error);
+                } finally {
+                    button.disabled = false; // Rehabilitar el botón
+                }
+            }
+
+            // --- Asignar Evento Inicial ---
+            startBtn.addEventListener('click', startQuiz);
+        });
+    </script>
+
+</body>
+</html>
+
+
+
