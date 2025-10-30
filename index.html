@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Evaluación: Transferencia de Calor</title>
     
     <!-- Importar la fuente Inter de Google Fonts -->
@@ -81,6 +81,14 @@
             Esta evaluación consta de 20 preguntas (Parte lúdica y Parte teórica).
             El orden de las preguntas y respuestas es aleatorio. Tus resultados se mostrarán al final.
         </p>
+        
+        <!-- NUEVO: Campo de Nombre -->
+        <div class="mb-6 max-w-sm mx-auto">
+            <label for="student-name-input" class="block text-left text-sm font-medium text-gray-700 mb-1">Ingresa tu nombre para comenzar:</label>
+            <input type="text" id="student-name-input" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: Juan Pérez">
+            <p id="name-error" class="text-red-600 text-sm mt-2 text-left" style="display: none;">Por favor, ingresa tu nombre.</p>
+        </div>
+        
         <button id="start-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
             Iniciar Evaluación (20 Preguntas)
         </button>
@@ -105,10 +113,10 @@
     <!-- 3. PANTALLA DE RESUMEN (Oculto) -->
     <div id="summary-container" class="max-w-3xl mx-auto">
         <div class="text-center bg-white p-6 rounded-xl shadow-lg mb-8">
-            <h2 class="text-3xl font-bold text-blue-800 mb-2">Evaluación Completada</h2>
+            <!-- MODIFICADO: Título de Resumen Personalizado -->
+            <h2 id="summary-title" class="text-3xl font-bold text-blue-800 mb-2">Evaluación Completada</h2>
             <p id="final-score" class="text-5xl font-bold text-gray-800">Puntaje: 0 / 20</p>
             
-            <!-- NUEVO: Mensaje de Feedback Personalizado -->
             <p id="final-feedback-message" class="text-lg md:text-xl font-semibold mt-4 p-4 rounded-lg"></p>
         </div>
         
@@ -165,6 +173,11 @@
             const summaryContainer = document.getElementById('summary-container');
             const startBtn = document.getElementById('start-btn');
 
+            // --- NUEVO: Variables de Nombre ---
+            const studentNameInput = document.getElementById('student-name-input');
+            const nameError = document.getElementById('name-error');
+            let studentName = ""; // Guardar el nombre globalmente
+
             // --- Variables del Quiz ---
             const questionCounter = document.getElementById('question-counter');
             const quizImage = document.getElementById('quiz-image');
@@ -172,6 +185,7 @@
             const mcqContainer = document.getElementById('quiz-options-container');
 
             // --- Variables de Resumen ---
+            const summaryTitle = document.getElementById('summary-title'); // NUEVO
             const finalScoreEl = document.getElementById('final-score');
             const summaryList = document.getElementById('summary-list');
 
@@ -280,6 +294,17 @@
 
             // Función para inicializar y empezar el quiz
             function startQuiz() {
+                
+                // --- NUEVO: Validación de Nombre ---
+                studentName = studentNameInput.value.trim();
+                if (studentName === "") {
+                    nameError.style.display = 'block'; // Mostrar error
+                    return; // Detener si no hay nombre
+                }
+                nameError.style.display = 'none'; // Ocultar error si hay nombre
+                // --- FIN Validación ---
+
+
                 // 1. Cargar datos de la galería oculta (Part 1 - Lúdica)
                 questions = [];
                 allImageAnswers = []; 
@@ -397,23 +422,26 @@
                 score = userAnswers.filter(ans => ans.isCorrect).length;
                 finalScoreEl.textContent = `Puntaje Final: ${score} / ${totalQuestions}`;
 
-                // --- NUEVO: Lógica de Feedback Personalizado ---
+                // --- MODIFICADO: Título Personalizado ---
+                summaryTitle.textContent = `¡Evaluación Completada, ${studentName}!`;
+                
+                // --- MODIFICADO: Lógica de Feedback Personalizado ---
                 const feedbackEl = document.getElementById('final-feedback-message');
                 const percentage = (score / totalQuestions) * 100;
                 let feedbackMessage = "";
                 let feedbackClass = ""; // Clases de Tailwind para color
 
                 if (percentage >= 90) {
-                    feedbackMessage = "¡Felicitaciones, eres sobresaliente! Tienes un dominio excelente de los conceptos.";
+                    feedbackMessage = `¡Felicitaciones, ${studentName}! Eres sobresaliente. Tienes un dominio excelente de los conceptos.`;
                     feedbackClass = "bg-green-100 text-green-800 border border-green-300";
                 } else if (percentage >= 70) {
-                    feedbackMessage = "¡Muy buen trabajo! Estás en un buen nivel. Repasa los conceptos en los que fallaste para perfeccionar tu conocimiento.";
+                    feedbackMessage = `¡Muy buen trabajo, ${studentName}! Estás en un buen nivel. Repasa los conceptos en los que fallaste para perfeccionar tu conocimiento.`;
                     feedbackClass = "bg-blue-100 text-blue-800 border border-blue-300";
                 } else if (percentage >= 50) {
-                    feedbackMessage = "Estás en camino, pero necesitas repasar. Concéntrate en las preguntas incorrectas y usa el botón 'Explicar' para reforzar esos temas.";
+                    feedbackMessage = `Estás en camino, ${studentName}, pero necesitas repasar. Concéntrate en las preguntas incorrectas y usa el botón 'Explicar' para reforzar esos temas.`;
                     feedbackClass = "bg-yellow-100 text-yellow-800 border border-yellow-300";
                 } else {
-                    feedbackMessage = "Debes repasar a fondo estos conceptos. Te recomendamos revisar el material de clase y luego volver a intentar la evaluación.";
+                    feedbackMessage = `Debes repasar a fondo estos conceptos, ${studentName}. Te recomendamos revisar el material de clase y luego volver a intentar la evaluación.`;
                     feedbackClass = "bg-red-100 text-red-800 border border-red-300";
                 }
 
@@ -560,6 +588,4 @@
 
 </body>
 </html>
-
-
 
